@@ -5,12 +5,13 @@ using BeerapiNet7._0.Models;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+var connectionString = builder.Configuration.GetConnectionString("StringConnection");
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddDbContext<BeerDbContext>();
+builder.Services.AddDbContext<BeerDbContext>(opt => opt.UseSqlServer(connectionString));
 
 var config = new MapperConfiguration(cfg =>
 {
@@ -34,12 +35,10 @@ app.UseHttpsRedirection();
 app.MapGet("/beers", async (BeerDbContext context) =>
 {
 
-    var BeerDto = await ApiUtilities.GetEntityAsync<BeerDTO, Beer>(context,mapper);
+    var BeerDto = await ApiUtilities.GetEntityAsync<BeerDTO, Beer>(context, mapper);
     return Results.Ok(BeerDto);
-    //var beers =  await context.Beers.ToListAsync();
-    //var beersDto = mapper.Map<List<BeerDTO>>(beers);
-    //return Results.Ok(beersDto);
 });
+
 
 app.MapPost("/beers", async (BeerDTO beerDTO, BeerDbContext context) =>
 {
@@ -50,18 +49,26 @@ app.MapPost("/beers", async (BeerDTO beerDTO, BeerDbContext context) =>
 });
 
 
-//app.MapGet("/countries", async (BeerDbContext context) => await ApiUtilities.GetEntityAsync<Country>(context));
+app.MapGet("/countries", async (BeerDbContext context) =>
+{
+    var countryDto = await ApiUtilities.GetEntityAsync<CountryDTO, Country>(context, mapper);
+    return Results.Ok(countryDto);
+});
 
 app.MapPost("/country", async (CountryDTO countryDTO, BeerDbContext context) =>
 {
     var countryMap = mapper.Map<Country>(countryDTO);
     var createdCountry = await ApiUtilities.CreatedEntityAsync<Country>(countryMap, context);
-    return Results.Created($"country/{createdCountry.Id}",createdCountry);
+    return Results.Created($"country/{createdCountry.Id}", createdCountry);
 
 });
 
 
-//app.MapGet("/typebeers", async (BeerDbContext context) => await ApiUtilities.GetEntityAsync<TypeBeer>(context));
+app.MapGet("/typebeers", async (BeerDbContext context) => 
+{    
+    var countryDto = await ApiUtilities.GetEntityAsync<TypeBeerDTO, TypeBeer>(context, mapper); 
+    return Results.Ok(countryDto);
+});
 
 app.MapPost("/typebeer", async (TypeBeer type, BeerDbContext context) =>
 {
@@ -72,12 +79,16 @@ app.MapPost("/typebeer", async (TypeBeer type, BeerDbContext context) =>
 });
 
 
-//app.MapGet("/companies", async(BeerDbContext context) => await ApiUtilities.GetEntityAsync<Company>(context));
+app.MapGet("/companies", async (BeerDbContext context) => 
+{ 
+    var countryDto = await ApiUtilities.GetEntityAsync<CompanyDTO, Company>(context, mapper); 
+    return Results.Ok(countryDto);
+});
 
 app.MapPost("/companies", async (Company company, BeerDbContext context) =>
 {
 
-    var createdCountry = await ApiUtilities.CreatedEntityAsync <Company> (company, context);
+    var createdCountry = await ApiUtilities.CreatedEntityAsync<Company>(company, context);
     return Results.Created($"type/{createdCountry.Id}", createdCountry);
 
 });
